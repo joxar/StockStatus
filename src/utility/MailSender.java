@@ -16,7 +16,7 @@ public class MailSender {
 		final String DOMAIN = "@yahoo.co.jp";
 
 		try {
-			// config SMTP server
+			// configure for connecting with SMTP server
 			Properties props = new Properties();
 			props.setProperty( "mail.smtp.port", "587");
 			props.setProperty("mail.smtp.socketFactory.port", "587");
@@ -39,18 +39,18 @@ public class MailSender {
 				mp.addBodyPart(mbp);
 			}
 
-			// sendTo
+			// sendTo:
 			mimeMessage.setFrom( new InternetAddress( USR+DOMAIN, USR, "iso-2022-jp" ) );
 			mimeMessage.setRecipients( Message.RecipientType.TO, USR+DOMAIN );
-			// title
+			// title:
 			mimeMessage.setSubject( "Stock Info", "iso-2022-jp" );
-			// content
+			// content:
 			mimeMessage.setText( "<h1>Stock Info</h1>", "iso-2022-jp" );
-			// format
+			// format:
 			mimeMessage.setHeader( "Content-Type", "text/html" );
-			// date
+			// date:
 			mimeMessage.setSentDate( new Date() );
-			// attached file
+			// attached file:
 			mimeMessage.setContent(mp);
 
 			// execute sending

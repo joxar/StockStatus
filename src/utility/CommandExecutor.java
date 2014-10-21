@@ -2,16 +2,18 @@ package utility;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 
 public class CommandExecutor {
 
 	static final String DNAME_TEMPLATE = "output/";
-	static final String FNAME_TEMPLATE = "_test";
+	static final String SPACE = "_";
 
-	public ArrayList<String> execWget(ArrayList<String> targetURLs, String ftype) throws IOException, InterruptedException {
+	/*** get HTML files by given URLs ***/
+	public HashMap<String,String> execWget(HashMap<String,String> targetInfoMap, String ftype) throws IOException, InterruptedException {
 
 		String[] command = new String[4];
-		ArrayList<String> outputList = new ArrayList<String>();
 		String output = "";
 
 		Runtime rt = Runtime.getRuntime();
@@ -19,23 +21,24 @@ public class CommandExecutor {
 
 		try {
 
-			for (int i=0; i<targetURLs.size(); i++) {
-				output = DNAME_TEMPLATE + i + FNAME_TEMPLATE + "." + ftype;
+			int idx = 0;
+			for (String key : targetInfoMap.keySet()) {
+
+				output = DNAME_TEMPLATE + idx + SPACE + key + "." + ftype;
 
 				// set command
 				command[0] = "/usr/local/bin/wget";
-				command[1] = targetURLs.get(i);
+				command[1] = targetInfoMap.get(key);
 				command[2] = "-O";
 				command[3] = output;
 
-				// execute
+				// execute command
 				ps = rt.exec(command);
 				ps.waitFor();
 
-				outputList.add(output);
+				targetInfoMap.put(key, output); //output: name of downloaded file
+				idx++;
 			}
-
-			return outputList;
 
 		} catch (InterruptedException ie) {
 			throw ie;
@@ -43,5 +46,6 @@ public class CommandExecutor {
 			throw ioe;
 		}
 
+		return targetInfoMap;
 	}
 }
