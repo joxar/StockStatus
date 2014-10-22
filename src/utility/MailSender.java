@@ -9,7 +9,7 @@ import javax.mail.internet.*;
 
 public class MailSender {
 
-	public void sendMail(String userName, String passWord, ArrayList<String> attachedFiles) throws Exception {
+	public void sendMail(String userName, String passWord, String sendTo, String msgContent, String attachedFile) throws Exception {
 
 		final String USR = userName;
 		final String PW = passWord;
@@ -32,18 +32,16 @@ public class MailSender {
 
 			// set attached files
 			Multipart mp = new MimeMultipart();
-			for (int i=0; i<attachedFiles.size(); i++) {
 				MimeBodyPart mbp = new MimeBodyPart();
-				FileDataSource fds = new FileDataSource(attachedFiles.get(i));
+				FileDataSource fds = new FileDataSource(attachedFile);
 				mbp.setDataHandler(new DataHandler(fds));
 				mp.addBodyPart(mbp);
-			}
 
 			// sendTo:
 			mimeMessage.setFrom( new InternetAddress( USR+DOMAIN, USR, "iso-2022-jp" ) );
-			mimeMessage.setRecipients( Message.RecipientType.TO, USR+DOMAIN );
+			mimeMessage.setRecipients( Message.RecipientType.TO, sendTo );
 			// title:
-			mimeMessage.setSubject( "Stock Info", "iso-2022-jp" );
+			mimeMessage.setSubject( "[StockInfo]"+msgContent, "iso-2022-jp" );
 			// content:
 			mimeMessage.setText( "<h1>Stock Info</h1>", "iso-2022-jp" );
 			// format:

@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.List;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,8 +36,8 @@ public class Main {
 		HashMap<String,String> pageInfoMap = new HashMap<String,String>();
 		ArrayList<int[]> xyOnPicts = new ArrayList<int[]>();
 		HashMap<String,int[]> deviceInfoMap = new HashMap<String,int[]>();
-		ArrayList<String[]> resultInfoList = new ArrayList<String[]>();
-		String[] resultInfo = new String[4];
+
+		String[] resultInfo = null;
 
 		String propFile = PROP_FILE;
 		Properties prop = new Properties();
@@ -67,50 +68,55 @@ public class Main {
 			pageInfoMap = ce.execWget(pageInfoMap, FTYPE_GIF);
 
 			/** judge Color **/
+			//int[] XY_64G_SPG = {440, 1565};
+			//test
+			int[] XY_64G_SPG = {440, 1650};
 			int[] XY_64G_SLV = {440, 1695};
 			int[] XY_64G_GLD = {440, 1735};
+			int[] XY_128G_SPG = {440, 1610};
 			int[] XY_128G_SLV = {440, 1820};
 			int[] XY_128G_GLD = {440, 1860};
-			int[] TEST = {440, 1650};
-//			64G S 440,1695
-//			64G G 440,1735
-//			128G S 440,1820
-//			128G G 440,1860
 
-			deviceInfoMap.put("XY_64G_SLV", XY_64G_SLV);
-			deviceInfoMap.put("XY_64G_GLD", XY_64G_GLD);
-			deviceInfoMap.put("XY_128G_SLV", XY_128G_SLV);
-			deviceInfoMap.put("XY_128G_GLD", XY_128G_GLD);
+			deviceInfoMap.put("64G_SPACEGREY", XY_64G_SPG);
+			deviceInfoMap.put("64G_SILVEr", XY_64G_SLV);
+			deviceInfoMap.put("64G_GOLD", XY_64G_GLD);
+			deviceInfoMap.put("128G_SPACEGREY", XY_128G_SPG);
+			deviceInfoMap.put("128G_SILVER", XY_128G_SLV);
+			deviceInfoMap.put("128G_GPLD", XY_128G_GLD);
+
 			/*
 			 * exist: -16757083
 			 * not : -1
 			 */
-			deviceInfoMap.put("TEST", TEST);
-
+			ArrayList<String[]> resultInfoList = new ArrayList<String[]>();
 			GifAnalyzer ga = new GifAnalyzer();
 			for (String key : pageInfoMap.keySet()) {
-				resultInfo[0] = key; // store name
-				resultInfo[1] = ga.getRGBcode(pageInfoMap.get(key), deviceInfoMap)[0]; // device spec
-				resultInfo[2] = pageInfoMap.get(key); // table gif
-				resultInfo[3] = ga.getRGBcode(pageInfoMap.get(key), deviceInfoMap)[1]; // cell rgb
+				for (String key2 : deviceInfoMap.keySet()) {
+					resultInfo = new String[4];
+					resultInfo[0] = key; // store name
+					resultInfo[1] = key2; // device spec
+					resultInfo[2] = pageInfoMap.get(key); // table gif
+					resultInfo[3] = Integer.toString(ga.getRGBcode(pageInfoMap.get(key), deviceInfoMap.get(key2))); // rgb info on given pict
 
-				resultInfoList.add(resultInfo);
+					resultInfoList.add(resultInfo);
+				}
+
 			}
 
 			/*** judge and send a mail ***/
-//				for (String key : stockInfoAsRGBMap.keySet()) {
-//
-//				// no stock
-//				if (stockInfoAsRGBMap.get(key) == -1) {
-//					System.out.println(key + " : NOT exists");
-//
-//				// stock exists
-//				} else {
-//					String uname = (String)prop.get(USER_NAME);
-//					String pw = (String)prop.get(PASSWORD);
-//					ml.sendMail(uname, pw, msgContent, resourceFiles);
-//				}
-//			}
+			for (int i=0; i<resultInfoList.size(); i++) {
+				// no stock
+				if ( Integer.valueOf((resultInfoList.get(i))[3]) == -1) {
+					//skip
+
+				// stock exists
+				} else {
+					String uname = (String)prop.get(USER_NAME);
+					String pw = (String)prop.get(PASSWORD);
+					System.out.println(resultInfoList.get(i)[2]);
+					ml.sendMail(uname, pw, (String) prop.get(SEND_TO), resultInfoList.get(i)[0]+":"+resultInfoList.get(i)[1], resultInfoList.get(i)[2]);
+				}
+			}
 
 		} catch (InterruptedException ie) {
 			ie.printStackTrace();

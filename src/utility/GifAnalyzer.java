@@ -10,31 +10,25 @@ import javax.imageio.ImageIO;
 
 public class GifAnalyzer {
 
-	public String[] getRGBcode(String pictFile, HashMap<String,int[]> device_xy) throws IOException {
+	public int getRGBcode(String pictFile, int[] xy) throws IOException {
 
 		// xy: deviceSpec-pixelX-pixelY
-		String[] rgbInfoArray = new String[2];
+		int rgbCode = 0;
 
 		// pictInfoMap: keyName-fileName
 		File file = new File(pictFile);
 		BufferedImage bi = null;
-		int rgbCode = 0;
 
 		try {
 
 			bi = ImageIO.read(file);
-
-			for (String deviceSpec : device_xy.keySet()) {
-				rgbCode = bi.getRGB(device_xy.get(deviceSpec)[0], device_xy.get(deviceSpec)[1]);
-				rgbInfoArray[0] = deviceSpec; // device spec
-				rgbInfoArray[1] = Integer.toString(rgbCode); // rgbCode
-			}
+			rgbCode = bi.getRGB(xy[0], xy[1]);
 
 		} catch (IOException e) {
 			throw e;
 		}
 
-		return rgbInfoArray;
+		return rgbCode;
 	}
 
 }

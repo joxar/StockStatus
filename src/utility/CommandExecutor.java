@@ -24,7 +24,7 @@ public class CommandExecutor {
 			int idx = 0;
 			for (String key : targetInfoMap.keySet()) {
 
-				output = DNAME_TEMPLATE + idx + SPACE + key + "." + ftype;
+				output = DNAME_TEMPLATE + idx + "_" + key + "." + ftype;
 
 				// set command
 				command[0] = "/usr/local/bin/wget";
