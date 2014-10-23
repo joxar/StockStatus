@@ -14,6 +14,7 @@ public class MailSender {
 		final String USR = userName;
 		final String PW = passWord;
 		final String DOMAIN = "@yahoo.co.jp";
+		msgContent = "'" + msgContent +"'" + " is arrived!!";
 
 		try {
 			// configure for connecting with SMTP server
@@ -31,25 +32,25 @@ public class MailSender {
 			MimeMessage mimeMessage = new MimeMessage( session );
 
 			// set attached files
-			Multipart mp = new MimeMultipart();
-				MimeBodyPart mbp = new MimeBodyPart();
-				FileDataSource fds = new FileDataSource(attachedFile);
-				mbp.setDataHandler(new DataHandler(fds));
-				mp.addBodyPart(mbp);
+//			Multipart mp = new MimeMultipart();
+//			MimeBodyPart mbp = new MimeBodyPart();
+//			FileDataSource fds = new FileDataSource(attachedFile);
+//			mbp.setDataHandler(new DataHandler(fds));
+//			mp.addBodyPart(mbp);
 
 			// sendTo:
 			mimeMessage.setFrom( new InternetAddress( USR+DOMAIN, USR, "iso-2022-jp" ) );
 			mimeMessage.setRecipients( Message.RecipientType.TO, sendTo );
 			// title:
-			mimeMessage.setSubject( "[StockInfo]"+msgContent, "iso-2022-jp" );
+			mimeMessage.setSubject( "[stock info] "+msgContent, "iso-2022-jp" );
 			// content:
-			mimeMessage.setText( "<h1>Stock Info</h1>", "iso-2022-jp" );
+			mimeMessage.setText( "<h1>stock info</h1>", "iso-2022-jp" );
 			// format:
 			mimeMessage.setHeader( "Content-Type", "text/html" );
 			// date:
 			mimeMessage.setSentDate( new Date() );
 			// attached file:
-			mimeMessage.setContent(mp);
+			// mimeMessage.setContent(mp);
 
 			// execute sending
 			Transport.send( mimeMessage );

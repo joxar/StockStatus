@@ -1,6 +1,5 @@
 package main;
 
-import java.awt.List;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,22 +24,33 @@ public class Main {
 	static final String PAGE_NUM = "pageNum";
 
 
+	static final int[] XY_64G_SPG = {440, 1565};
+	static final int[] XY_64G_SLV = {440, 1650};  //test value
+	//static final int[] XY_64G_SLV = {440, 1695};
+	static final int[] XY_64G_GLD = {440, 1735};
+	static final int[] XY_128G_SPG = {440, 1610};
+	static final int[] XY_128G_SLV = {440, 1820};
+	static final int[] XY_128G_GLD = {440, 1860};
+
+	static final String MSG_64G_SPG = "iPhone6Plus 64G SpaceGrey";
+	static final String MSG_64G_SLV = "iPhone6Plus 64G Silver";
+	static final String MSG_64G_GLD = "iPhone6Plus 64G Gold";
+	static final String MSG_128G_SPG = "iPhone6Plus 128G SpaceGrey";
+	static final String MSG_128G_SLV = "iPhone6Plus 128G Silver";
+	static final String MSG_128G_GLD = "iPhone6Plus 128G Gold";
+
+	private static Properties prop = new Properties();
+	private static String propFile = PROP_FILE;
+
 	public static void main(String[] args) {
 
 		/*** initialize ***/
 		PropGetter pg = null;
 		CommandExecutor ce = new CommandExecutor();
 		HTMLAnalyzer htmlAnlyzr = new HTMLAnalyzer();
-		MailSender ml = new MailSender();
 
 		HashMap<String,String> pageInfoMap = new HashMap<String,String>();
-		ArrayList<int[]> xyOnPicts = new ArrayList<int[]>();
-		HashMap<String,int[]> deviceInfoMap = new HashMap<String,int[]>();
-
-		String[] resultInfo = null;
-
-		String propFile = PROP_FILE;
-		Properties prop = new Properties();
+		ArrayList<String[]> resultInfoList = new ArrayList<String[]>();
 
 		try {
 
@@ -67,56 +77,11 @@ public class Main {
 			/*** get gif files by given URLs ***/
 			pageInfoMap = ce.execWget(pageInfoMap, FTYPE_GIF);
 
-			/** judge Color **/
-			//int[] XY_64G_SPG = {440, 1565};
-			//test
-			int[] XY_64G_SPG = {440, 1650};
-			int[] XY_64G_SLV = {440, 1695};
-			int[] XY_64G_GLD = {440, 1735};
-			int[] XY_128G_SPG = {440, 1610};
-			int[] XY_128G_SLV = {440, 1820};
-			int[] XY_128G_GLD = {440, 1860};
-
-			deviceInfoMap.put("64G_SPACEGREY", XY_64G_SPG);
-			deviceInfoMap.put("64G_SILVEr", XY_64G_SLV);
-			deviceInfoMap.put("64G_GOLD", XY_64G_GLD);
-			deviceInfoMap.put("128G_SPACEGREY", XY_128G_SPG);
-			deviceInfoMap.put("128G_SILVER", XY_128G_SLV);
-			deviceInfoMap.put("128G_GPLD", XY_128G_GLD);
-
-			/*
-			 * exist: -16757083
-			 * not : -1
-			 */
-			ArrayList<String[]> resultInfoList = new ArrayList<String[]>();
-			GifAnalyzer ga = new GifAnalyzer();
-			for (String key : pageInfoMap.keySet()) {
-				for (String key2 : deviceInfoMap.keySet()) {
-					resultInfo = new String[4];
-					resultInfo[0] = key; // store name
-					resultInfo[1] = key2; // device spec
-					resultInfo[2] = pageInfoMap.get(key); // table gif
-					resultInfo[3] = Integer.toString(ga.getRGBcode(pageInfoMap.get(key), deviceInfoMap.get(key2))); // rgb info on given pict
-
-					resultInfoList.add(resultInfo);
-				}
-
-			}
+			/*** judge stock status and generate info mapping ***/
+			resultInfoList = generateMapping(pageInfoMap);
 
 			/*** judge and send a mail ***/
-			for (int i=0; i<resultInfoList.size(); i++) {
-				// no stock
-				if ( Integer.valueOf((resultInfoList.get(i))[3]) == -1) {
-					//skip
-
-				// stock exists
-				} else {
-					String uname = (String)prop.get(USER_NAME);
-					String pw = (String)prop.get(PASSWORD);
-					System.out.println(resultInfoList.get(i)[2]);
-					ml.sendMail(uname, pw, (String) prop.get(SEND_TO), resultInfoList.get(i)[0]+":"+resultInfoList.get(i)[1], resultInfoList.get(i)[2]);
-				}
-			}
+			judgeAndSend(resultInfoList);
 
 		} catch (InterruptedException ie) {
 			ie.printStackTrace();
@@ -127,4 +92,69 @@ public class Main {
 		}
 
 	}
+
+
+	private static ArrayList<String[]> generateMapping(HashMap<String,String> pageInfoMap) throws IOException {
+
+		HashMap<String,int[]> deviceInfoMap = new HashMap<String,int[]>();
+		String[] resultInfo = null;
+		ArrayList<String[]> resultInfoList = new ArrayList<String[]>();
+		GifAnalyzer ga = new GifAnalyzer();
+
+		/** map message-xy **/
+		deviceInfoMap.put(MSG_64G_SPG, XY_64G_SPG);
+		deviceInfoMap.put(MSG_64G_SLV, XY_64G_SLV);
+		deviceInfoMap.put(MSG_64G_GLD, XY_64G_GLD);
+		deviceInfoMap.put(MSG_128G_SPG, XY_128G_SPG);
+		deviceInfoMap.put(MSG_128G_SLV, XY_128G_SLV);
+		deviceInfoMap.put(MSG_128G_GLD, XY_128G_GLD);
+
+		/*
+		 * exist: -16757083
+		 * not : -1
+		 */
+		for (String key : pageInfoMap.keySet()) {
+			for (String key2 : deviceInfoMap.keySet()) {
+				resultInfo = new String[4];
+				resultInfo[0] = key; // store name
+				resultInfo[1] = key2; // device spec
+				resultInfo[2] = pageInfoMap.get(key); // table gif
+				try {
+					resultInfo[3] = Integer.toString(ga.getRGBcode(pageInfoMap.get(key), deviceInfoMap.get(key2)));  // rgb info on given pict
+				} catch (IOException ioe) {
+					throw ioe;
+				}
+
+				resultInfoList.add(resultInfo);
+			}
+		}
+
+		return resultInfoList;
+	}
+
+	private static void judgeAndSend(ArrayList<String[]> resultInfoList) throws Exception {
+
+		MailSender ml = new MailSender();
+
+		for (int i=0; i<resultInfoList.size(); i++) {
+			// no stock
+			if ( Integer.valueOf((resultInfoList.get(i))[3]) == -1) {
+				//skip
+
+				// stock exists
+			} else {
+				String uname = (String)prop.get(USER_NAME);
+				String pw = (String)prop.get(PASSWORD);
+
+				try {
+					ml.sendMail(uname, pw, (String) prop.get(SEND_TO), resultInfoList.get(i)[0]+":"+resultInfoList.get(i)[1], resultInfoList.get(i)[2]);
+				} catch (Exception e) {
+					throw e;
+				}
+
+			}
+		}
+
+	}
+
 }
