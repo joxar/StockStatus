@@ -23,20 +23,19 @@ public class Main {
 	static final String PAGE_URL = "pageURL";
 	static final String PAGE_NUM = "pageNum";
 
-
 	static final int[] XY_64G_SPG = {440, 1565};
-	static final int[] XY_64G_SLV = {440, 1650};  //test value
-	//static final int[] XY_64G_SLV = {440, 1695};
-	static final int[] XY_64G_GLD = {440, 1735};
 	static final int[] XY_128G_SPG = {440, 1610};
-	static final int[] XY_128G_SLV = {440, 1820};
+	//static final int[] XY_64G_SLV = {440, 1650};  //test value
+	static final int[] XY_64G_SLV = {440, 1695};
+	static final int[] XY_128G_SLV = {440, 1735};
+	static final int[] XY_64G_GLD = {440, 1815};
 	static final int[] XY_128G_GLD = {440, 1860};
 
 	static final String MSG_64G_SPG = "iPhone6Plus 64G SpaceGrey";
-	static final String MSG_64G_SLV = "iPhone6Plus 64G Silver";
-	static final String MSG_64G_GLD = "iPhone6Plus 64G Gold";
 	static final String MSG_128G_SPG = "iPhone6Plus 128G SpaceGrey";
+	static final String MSG_64G_SLV = "iPhone6Plus 64G Silver";
 	static final String MSG_128G_SLV = "iPhone6Plus 128G Silver";
+	static final String MSG_64G_GLD = "iPhone6Plus 64G Gold";
 	static final String MSG_128G_GLD = "iPhone6Plus 128G Gold";
 
 	private static Properties prop = new Properties();
@@ -134,24 +133,39 @@ public class Main {
 
 	private static void judgeAndSend(ArrayList<String[]> resultInfoList) throws Exception {
 
+		String uname = (String)prop.get(USER_NAME);
+		String pw = (String)prop.get(PASSWORD);
 		MailSender ml = new MailSender();
+		boolean noNews = true;
+		String msg = "";
 
 		for (int i=0; i<resultInfoList.size(); i++) {
+
 			// no stock
 			if ( Integer.valueOf((resultInfoList.get(i))[3]) == -1) {
 				//skip
 
 				// stock exists
 			} else {
-				String uname = (String)prop.get(USER_NAME);
-				String pw = (String)prop.get(PASSWORD);
+				noNews = false;
+				msg = "[stock info]\r\n"+"<"+resultInfoList.get(i)[0]+">"+"\r\n"+resultInfoList.get(i)[1];
+				msg = msg + " is arrived!!";
 
 				try {
-					ml.sendMail(uname, pw, (String) prop.get(SEND_TO), resultInfoList.get(i)[0]+":"+resultInfoList.get(i)[1], resultInfoList.get(i)[2]);
+					ml.sendMail(uname, pw, (String) prop.get(SEND_TO), msg, null);
 				} catch (Exception e) {
 					throw e;
 				}
 
+			}
+		}
+
+		if (noNews == true) {
+			try {
+				msg = "[stock info]No news";
+				ml.sendMail(uname, pw, (String) prop.get(SEND_TO), msg, null);
+			} catch (Exception e) {
+				throw e;
 			}
 		}
 

@@ -2,8 +2,6 @@ package utility;
 
 import java.util.*;
 
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
 import javax.mail.*;
 import javax.mail.internet.*;
 
@@ -14,7 +12,6 @@ public class MailSender {
 		final String USR = userName;
 		final String PW = passWord;
 		final String DOMAIN = "@yahoo.co.jp";
-		msgContent = "'" + msgContent +"'" + " is arrived!!";
 
 		try {
 			// configure for connecting with SMTP server
@@ -42,9 +39,9 @@ public class MailSender {
 			mimeMessage.setFrom( new InternetAddress( USR+DOMAIN, USR, "iso-2022-jp" ) );
 			mimeMessage.setRecipients( Message.RecipientType.TO, sendTo );
 			// title:
-			mimeMessage.setSubject( "[stock info] "+msgContent, "iso-2022-jp" );
+			mimeMessage.setSubject( msgContent, "iso-2022-jp" );
 			// content:
-			mimeMessage.setText( "<h1>stock info</h1>", "iso-2022-jp" );
+			mimeMessage.setText( "http://www.yodobashi.com/ec/support/apple/generaltop/index.html#yoyaku6", "iso-2022-jp" );
 			// format:
 			mimeMessage.setHeader( "Content-Type", "text/html" );
 			// date:
@@ -58,5 +55,6 @@ public class MailSender {
 		} catch (Exception e) {
 			throw e;
 		}
+
 	}
 }
